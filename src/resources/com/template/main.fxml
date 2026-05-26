@@ -10,20 +10,20 @@
 
 <AnchorPane prefHeight="463.0" prefWidth="593.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.template.MainController">
    <children>
-      <Pane prefHeight="463.0" prefWidth="600.0" style="-fx-background-color: #F8F9FA;">
+      <Pane prefHeight="463.0" prefWidth="600.0" style="-fx-background-color: ligth gray;">
          <children>
-            <Button fx:id="btnEditar" layoutX="443.0" layoutY="101.0" mnemonicParsing="false" style="-fx-background-color: #3498DB;" text="Editar" />
-            <Button fx:id="btnAdicionar" layoutX="367.0" layoutY="101.0" mnemonicParsing="false" style="-fx-background-color: #2ECC71;" text="Adicionar" />
-            <Label fx:id="txtId" layoutX="43.0" layoutY="31.0" text="ID" />
-            <Label fx:id="txtModelo" layoutX="43.0" layoutY="101.0" text="Modelo" />
-            <Label fx:id="txtMarca" layoutX="43.0" layoutY="69.0" text="Marca" />
-            <Label fx:id="txtANoFabricacao" layoutX="43.0" layoutY="140.0" text="Ano de fabricação" />
-            <Label fx:id="txtPlaca" layoutX="43.0" layoutY="176.0" text="Placa" />
-            <TextField layoutX="151.0" layoutY="27.0" />
-            <TextField layoutX="151.0" layoutY="65.0" />
-            <TextField layoutX="151.0" layoutY="101.0" />
-            <TextField layoutX="151.0" layoutY="136.0" />
-            <TextField layoutX="151.0" layoutY="172.0" />
+            <Button fx:id="btnEditar" layoutX="443.0" layoutY="101.0" mnemonicParsing="false" onAction="#btnEditarAction" style="-fx-background-color: #3498DB;" text="Editar" />
+            <Button fx:id="btnAdicionar" layoutX="367.0" layoutY="101.0" mnemonicParsing="false" onAction="#btnAdicionarAction" style="-fx-background-color: #2ECC71;" text="Adicionar" />
+            <Label layoutX="43.0" layoutY="31.0" text="ID" />
+            <Label layoutX="43.0" layoutY="101.0" text="Modelo" />
+            <Label layoutX="43.0" layoutY="69.0" text="Marca" />
+            <Label layoutX="43.0" layoutY="140.0" text="Ano de fabricação" />
+            <Label layoutX="43.0" layoutY="176.0" text="Placa" />
+            <TextField fx:id="txtId" layoutX="151.0" layoutY="27.0" />
+            <TextField fx:id="txtMarca" layoutX="151.0" layoutY="65.0" />
+            <TextField fx:id="txtModelo" layoutX="151.0" layoutY="101.0" />
+            <TextField fx:id="txtAnoFabricacao" layoutX="151.0" layoutY="136.0" />
+            <TextField fx:id="txtPlaca" layoutX="151.0" layoutY="172.0" />
             <TableView fx:id="tblCarro" layoutX="43.0" layoutY="249.0" prefHeight="200.0" prefWidth="426.0">
               <columns>
                 <TableColumn fx:id="colId" prefWidth="75.0" text="Id" />
@@ -33,7 +33,7 @@
                   <TableColumn fx:id="colPlaca" prefWidth="85.0" text="Placa" />
               </columns>
             </TableView>
-            <Button fx:id="btnExcluir" layoutX="505.0" layoutY="101.0" mnemonicParsing="false" style="-fx-background-color: #E74C3C;" text="Excluir" />
+            <Button fx:id="btnExcluir" layoutX="505.0" layoutY="101.0" mnemonicParsing="false" onAction="#btnExcluirAction" style="-fx-background-color: #E74C3C;" text="Excluir" />
          </children>
       </Pane>
    </children>

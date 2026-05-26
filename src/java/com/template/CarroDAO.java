@@ -1,12 +1,19 @@
 package com.template;
 
+/**
+ * Classe responsavel pelas operacoes de banco de dados (CRUD) da entidade Carro.
+ * Adaptada para retornar colecoes de dados para a interface grafica.
+ */
 public class CarroDAO {
+
+    // Inicializa o Logger oficial do Java para registrar mensagens e erros de sistema
+    private static final Logger LOGGER = Logger.getLogger(CarroDAO.class.getName());
+
     public void inserirCarro(CarroDTO carro) {
         String sql = "INSERT INTO carros (marca, modelo, ano_fabricacao, placa) VALUES (?, ?, ?, ?)";
 
-        // Utilizando try-with-resources para fechamento automático de recursos
         try (Connection conexao = new Conexao().conectaBD();
-             PreparedStatement ps = conexao.prepareStatement(sql)) { // Prepara o comando SQL no banco e cria o 'stmt' para preenchermos os dados
+             PreparedStatement ps = conexao.prepareStatement(sql)) {
 
             ps.setString(1, carro.getMarca());
             ps.setString(2, carro.getModelo());
@@ -14,43 +21,42 @@ public class CarroDAO {
             ps.setString(4, carro.getPlaca());
 
             ps.execute();
-            System.out.println("-> SUCESSO: Carro cadastrado no sistema!");
+            LOGGER.log(Level.INFO, "Carro cadastrado com sucesso! Placa: {0}", carro.getPlaca());
 
         } catch (SQLException e) {
-            System.err.println("-> ERRO AO INSERIR CARRO: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Erro ao inserir carro no banco de dados", e);
         }
     }
 
-    public void selecionarCarros() {
+    /**
+     * Busca todos os carros do banco de dados e os retorna em uma lista.
+     * Ideal para preencher componentes visuais como TableView.
+     */
+    public List<CarroDTO> selecionarCarros() {
         String sql = "SELECT * FROM carros";
+        List<CarroDTO> listaCarros = new ArrayList<>();
 
         try (Connection conexao = new Conexao().conectaBD();
              PreparedStatement ps = conexao.prepareStatement(sql);
-             ResultSet resultado = ps.executeQuery()) {
-
-            System.out.println("\n--- LISTA DE CARROS CADASTRADOS ---");
-            boolean possuiRegistros = false;
+             ResultSet resultado = ps.executeQuery()) { // Executa a busca (SELECT) no banco e guarda a tabela de respostas na variavel 'resultado'
 
             while (resultado.next()) {
-                possuiRegistros = true;
-                int id = resultado.getInt("id");
-                String marca = resultado.getString("marca");
-                String modelo = resultado.getString("modelo");
-                int ano = resultado.getInt("ano_fabricacao");
-                String placa = resultado.getString("placa");
+                CarroDTO carro = new CarroDTO();
+                carro.setId(resultado.getInt("id"));
+                carro.setMarca(resultado.getString("marca"));
+                carro.setModelo(resultado.getString("modelo"));
+                carro.setAnoFabricacao(resultado.getInt("ano_fabricacao"));
+                carro.setPlaca(resultado.getString("placa"));
 
-                System.out.printf("ID: %d | Marca: %s | Modelo: %s | Ano: %d | Placa: %s\n",
-                        id, marca, modelo, ano, placa);
+                // Adiciona o carro preenchido para dentro da nossa lista na memoria
+                listaCarros.add(carro);
             }
-
-            if (!possuiRegistros) {
-                System.out.println("Nenhum carro encontrado no banco de dados.");
-            }
-            System.out.println("-----------------------------------");
 
         } catch (SQLException e) {
-            System.err.println("-> ERRO AO BUSCAR CARROS: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Erro ao buscar a lista de carros no banco", e);
         }
+
+        return listaCarros;
     }
 
     public void atualizarCarro(CarroDTO carro) {
@@ -68,13 +74,13 @@ public class CarroDAO {
             int linhasAfetadas = ps.executeUpdate();
 
             if (linhasAfetadas > 0) {
-                System.out.println("-> SUCESSO: Dados do carro atualizados!");
+                LOGGER.log(Level.INFO, "Dados do carro com ID {0} atualizados.", carro.getId());
             } else {
-                System.out.println("-> AVISO: Nenhum carro encontrado com o ID informado.");
+                LOGGER.log(Level.WARNING, "Nenhum carro encontrado para atualizar com o ID: {0}", carro.getId());
             }
 
         } catch (SQLException e) {
-            System.err.println("-> ERRO AO ATUALIZAR CARRO: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Erro ao atualizar dados do carro", e);
         }
     }
 
@@ -88,13 +94,13 @@ public class CarroDAO {
             int linhasAfetadas = ps.executeUpdate();
 
             if (linhasAfetadas > 0) {
-                System.out.println("-> SUCESSO: Carro removido do sistema!");
+                LOGGER.log(Level.INFO, "Carro com ID {0} removido do sistema.", id);
             } else {
-                System.out.println("-> AVISO: Nenhum carro encontrado com o ID informado.");
+                LOGGER.log(Level.WARNING, "Nenhum carro encontrado para exclusao com o ID: {0}", id);
             }
 
         } catch (SQLException e) {
-            System.err.println("-> ERRO AO EXCLUIR CARRO: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Erro ao tentar excluir carro", e);
         }
     }
 }
