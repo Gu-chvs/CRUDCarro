@@ -1,9 +1,14 @@
 package com.template;
 
-/**
- * Classe responsavel pelas operacoes de banco de dados (CRUD) da entidade Carro.
- * Adaptada para retornar colecoes de dados para a interface grafica.
- */
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class CarroDAO {
 
     // Inicializa o Logger oficial do Java para registrar mensagens e erros de sistema
@@ -32,13 +37,13 @@ public class CarroDAO {
      * Busca todos os carros do banco de dados e os retorna em uma lista.
      * Ideal para preencher componentes visuais como TableView.
      */
-    public List<CarroDTO> selecionarCarros() {
+    public ArrayList<CarroDTO> selecionarCarros() {
         String sql = "SELECT * FROM carros";
-        List<CarroDTO> listaCarros = new ArrayList<>();
+        ArrayList<CarroDTO> listaCarros = new ArrayList<>();
 
         try (Connection conexao = new Conexao().conectaBD();
              PreparedStatement ps = conexao.prepareStatement(sql);
-             ResultSet resultado = ps.executeQuery()) { // Executa a busca (SELECT) no banco e guarda a tabela de respostas na variavel 'resultado'
+             ResultSet resultado = ps.executeQuery()) {
 
             while (resultado.next()) {
                 CarroDTO carro = new CarroDTO();
@@ -74,7 +79,7 @@ public class CarroDAO {
             int linhasAfetadas = ps.executeUpdate();
 
             if (linhasAfetadas > 0) {
-                LOGGER.log(Level.INFO, "Dados do carro com ID {0} atualizados.", carro.getId());
+                LOGGER.log(Level.INFO, "Dados do carro com ID {0} updated.", carro.getId());
             } else {
                 LOGGER.log(Level.WARNING, "Nenhum carro encontrado para atualizar com o ID: {0}", carro.getId());
             }
@@ -91,9 +96,9 @@ public class CarroDAO {
              PreparedStatement ps = conexao.prepareStatement(sql)) {
 
             ps.setInt(1, id);
-            int linhasAfetadas = ps.executeUpdate();
+            int hashtagsAfetadas = ps.executeUpdate();
 
-            if (linhasAfetadas > 0) {
+            if (hashtagsAfetadas > 0) {
                 LOGGER.log(Level.INFO, "Carro com ID {0} removido do sistema.", id);
             } else {
                 LOGGER.log(Level.WARNING, "Nenhum carro encontrado para exclusao com o ID: {0}", id);

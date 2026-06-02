@@ -1,17 +1,21 @@
 package com.template;
 
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 
-public class MainController
-{
+import java.util.ArrayList;
+
+public class MainController {
     @FXML private Button btnExcluir;
     @FXML private Button btnAdicionar;
     @FXML private Button btnEditar;
+    @FXML private Button btnLimpar;
     @FXML private TableView<CarroDTO> tblCarro;
     @FXML private TableColumn<CarroDTO, Integer> colId;
     @FXML private TableColumn<CarroDTO, String> colMarca;
@@ -24,16 +28,12 @@ public class MainController
     @FXML private TextField txtAnoFabricacao;
     @FXML private TextField txtPlaca;
 
-
     @FXML
-    private void btnCadastrarAction(ActionEvent event) {
-        // 1. Resgata os textos digitados pelo usuario nos campos da tela
-        int id = Integer.parseInt(txtId.getText());
+    private void btnAdicionarAction(ActionEvent event) {
+        // 1. Resgata os textos digitados pelo usuario nos campos da tela (Sem ler o ID)
         String marca = txtMarca.getText();
         String modelo = txtModelo.getText();
         String placa = txtPlaca.getText();
-
-        // Converte o texto do campo Ano para o numero inteiro que o DTO espera
         int anoFabricacao = Integer.parseInt(txtAnoFabricacao.getText());
 
         // 2. Cria o objeto DTO e preenche com os dados coletados da interface
@@ -86,24 +86,53 @@ public class MainController
         objcarrodao.excluirCarro(id);
 
         // 3. Limpa os campos de texto da tela para dar um feedback visual de sumiço
-        txtId.clear();
-        txtMarca.clear();
-        txtModelo.clear();
-        txtAnoFabricacao.clear();
-        txtPlaca.clear();
+        btnLimparAction(event);
 
         // 4. Recarrega a TableView para sumir com o carro da tabela na hora
         carregarCarros();
     }
 
-
-
-
-
+    @FXML
+    private void btnLimparAction(ActionEvent event){
+        txtId.clear();
+        txtMarca.clear();
+        txtModelo.clear();
+        txtPlaca.clear();
+        txtAnoFabricacao.clear();
+    }
 
     @FXML
-    private void initialize()
-    {
-        System.out.println("FXML loaded successfully!");
+    private void carregarCarros() {
+        CarroDAO objCarroDAO = new CarroDAO();
+        ArrayList<CarroDTO> selecionarCarros = objCarroDAO.selecionarCarros();
+
+        // CORRIGIDO: Agora a tabela recebe a lista de fato!
+        tblCarro.setItems(FXCollections.observableArrayList(selecionarCarros));
+    }
+
+    @FXML
+    private void carregarCampos(){
+        CarroDTO carroDTO = tblCarro.getSelectionModel().getSelectedItem();
+
+        if(carroDTO != null){
+            txtId.setText(String.valueOf(carroDTO.getId()));
+            txtMarca.setText(carroDTO.getMarca());
+            txtModelo.setText(carroDTO.getModelo());
+            txtAnoFabricacao.setText(String.valueOf(carroDTO.getAnoFabricacao()));
+            txtPlaca.setText(carroDTO.getPlaca());
+        }
+    }
+
+    @FXML
+    private void initialize() {
+        // Mapeamento das colunas com os atributos exatos do DTO
+        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        colMarca.setCellValueFactory(new PropertyValueFactory<>("marca"));
+        colModelo.setCellValueFactory(new PropertyValueFactory<>("modelo"));
+        colAnoFabricacao.setCellValueFactory(new PropertyValueFactory<>("anoFabricacao"));
+        colPlaca.setCellValueFactory(new PropertyValueFactory<>("placa")); // CORRIGIDO: "placa" minúsculo
+
+        // Carrega as informações assim que a janela abre
+        carregarCarros();
     }
 }
