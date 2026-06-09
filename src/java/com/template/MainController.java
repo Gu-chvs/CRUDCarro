@@ -30,65 +30,55 @@ public class MainController {
 
     @FXML
     private void btnAdicionarAction(ActionEvent event) {
-        // 1. Resgata os textos digitados pelo usuario nos campos da tela (Sem ler o ID)
+
         String marca = txtMarca.getText();
         String modelo = txtModelo.getText();
         String placa = txtPlaca.getText();
         int anoFabricacao = Integer.parseInt(txtAnoFabricacao.getText());
 
-        // 2. Cria o objeto DTO e preenche com os dados coletados da interface
-        CarroDTO objcarrodto = new CarroDTO();
-        objcarrodto.setMarca(marca);
-        objcarrodto.setModelo(modelo);
-        objcarrodto.setAnoFabricacao(anoFabricacao);
-        objcarrodto.setPlaca(placa);
+        CarroDTO objCarroDTO = new CarroDTO();
+        objCarroDTO.setMarca(marca);
+        objCarroDTO.setModelo(modelo);
+        objCarroDTO.setAnoFabricacao(anoFabricacao);
+        objCarroDTO.setPlaca(placa);
 
-        // 3. Envia o DTO preenchido para o DAO salvar definitivamente no banco
         CarroDAO objcarrodao = new CarroDAO();
-        objcarrodao.inserirCarro(objcarrodto);
+        objcarrodao.inserirCarro(objCarroDTO);
 
-        // 4. Atualiza a TableView na tela para mostrar o novo carro cadastrado imediatamente
         carregarCarros();
     }
 
     @FXML
     private void btnEditarAction(ActionEvent event) {
-        // 1. Resgata os dados dos campos de texto da tela
-        int id = Integer.parseInt(txtId.getText()); // Captura o ID (obrigatorio para o UPDATE)
+
+        int id = Integer.parseInt(txtId.getText());
         String marca = txtMarca.getText();
         String modelo = txtModelo.getText();
         String placa = txtPlaca.getText();
         int anoFabricacao = Integer.parseInt(txtAnoFabricacao.getText());
 
-        // 2. Cria o objeto DTO e preenche com os novos dados
-        CarroDTO objcarrodto = new CarroDTO();
-        objcarrodto.setId(id); // Guarda o ID no DTO
-        objcarrodto.setMarca(marca);
-        objcarrodto.setModelo(modelo);
-        objcarrodto.setAnoFabricacao(anoFabricacao);
-        objcarrodto.setPlaca(placa);
+        CarroDTO objCarroDTO = new CarroDTO();
+        objCarroDTO.setId(id);
+        objCarroDTO.setMarca(marca);
+        objCarroDTO.setModelo(modelo);
+        objCarroDTO.setAnoFabricacao(anoFabricacao);
+        objCarroDTO.setPlaca(placa);
 
-        // 3. Instancia o DAO e envia o DTO para atualizar no banco de dados
-        CarroDAO objcarrodao = new CarroDAO();
-        objcarrodao.atualizarCarro(objcarrodto);
+        CarroDAO objCarroDAO = new CarroDAO();
+        objCarroDAO.atualizarCarro(objCarroDTO);
 
-        // 4. Atualiza a TableView para mostrar os dados novos na hora
         carregarCarros();
     }
 
     @FXML
     private void btnExcluirAction(ActionEvent event) {
-        // 1. Resgata apenas o ID do campo de texto da tela
         int id = Integer.parseInt(txtId.getText());
 
-        // 2. Instancia o DAO e envia o ID para ser deletado no banco de dados
-        CarroDAO objcarrodao = new CarroDAO();
-        objcarrodao.excluirCarro(id);
+        CarroDAO objCarroDAO = new CarroDAO();
+        objCarroDAO.excluirCarro(id);
 
-        // 3. Limpa os campos de texto da tela para dar um feedback visual de sumiço
         btnLimparAction(event);
 
-        // 4. Recarrega a TableView para sumir com o carro da tabela na hora
         carregarCarros();
     }
 
@@ -106,7 +96,7 @@ public class MainController {
         CarroDAO objCarroDAO = new CarroDAO();
         ArrayList<CarroDTO> selecionarCarros = objCarroDAO.selecionarCarros();
 
-        // CORRIGIDO: Agora a tabela recebe a lista de fato!
+
         tblCarro.setItems(FXCollections.observableArrayList(selecionarCarros));
     }
 
@@ -130,7 +120,7 @@ public class MainController {
         colMarca.setCellValueFactory(new PropertyValueFactory<>("marca"));
         colModelo.setCellValueFactory(new PropertyValueFactory<>("modelo"));
         colAnoFabricacao.setCellValueFactory(new PropertyValueFactory<>("anoFabricacao"));
-        colPlaca.setCellValueFactory(new PropertyValueFactory<>("placa")); // CORRIGIDO: "placa" minúsculo
+        colPlaca.setCellValueFactory(new PropertyValueFactory<>("placa"));
 
         // Carrega as informações assim que a janela abre
         carregarCarros();
