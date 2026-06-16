@@ -1,6 +1,9 @@
 package com.template;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -13,7 +16,7 @@ import java.util.ArrayList;
 
 public class MainController {
 
-    @FXML private Label lblStatus; // Novo componente de mensagem
+    @FXML private Label lblStatus;
 
     @FXML private Button btnExcluir;
     @FXML private Button btnAdicionar;
@@ -32,6 +35,12 @@ public class MainController {
     @FXML private TextField txtModelo;
     @FXML private TextField txtAnoFabricacao;
     @FXML private TextField txtPlaca;
+
+    // Novo componente para a busca em tempo real
+    @FXML private TextField txtPesquisa;
+
+    // Lista mestre que vai guardar os carros na memória para o filtro atuar por cima
+    private final ObservableList<CarroDTO> listaCarrosMaster = FXCollections.observableArrayList();
 
     @FXML
     private void btnAdicionarAction(ActionEvent event) {
@@ -113,8 +122,9 @@ public class MainController {
         txtModelo.clear();
         txtPlaca.clear();
         txtAnoFabricacao.clear();
-        tblCarro.getSelectionModel().clearSelection(); // Limpa a tabela e aciona o listener de bloqueio
-        txtMarca.requestFocus(); // Foca no primeiro campo
+        txtPesquisa.clear(); // Limpa também o campo de pesquisa ao resetar
+        tblCarro.getSelectionModel().clearSelection();
+        txtMarca.requestFocus();
         mostrarMensagem("Campos limpos. Pronto para novo cadastro.", "#a1a1a1");
     }
 
@@ -122,7 +132,9 @@ public class MainController {
     private void carregarCarros() {
         CarroDAO objCarroDAO = new CarroDAO();
         ArrayList<CarroDTO> lista = objCarroDAO.selecionarCarros();
-        tblCarro.setItems(FXCollections.observableArrayList(lista));
+
+        // Atualiza a nossa lista mestre na memória
+        listaCarrosMaster.setAll(lista);
     }
 
     @FXML
@@ -134,10 +146,10 @@ public class MainController {
             txtModelo.setText(carroDTO.getModelo());
             txtAnoFabricacao.setText(String.valueOf(carroDTO.getAnoFabricacao()));
             txtPlaca.setText(carroDTO.getPlaca());
+            mostrarMensagem("Veículo selecionado. Pronto para alteração ou exclusão.", "#3498DB");
         }
     }
 
-    // Método auxiliar para colorir o feedback do Label
     private void mostrarMensagem(String mensagem, String cor) {
         lblStatus.setText(mensagem);
         lblStatus.setStyle("-fx-text-fill: " + cor + ";");
@@ -151,19 +163,19 @@ public class MainController {
         colAnoFabricacao.setCellValueFactory(new PropertyValueFactory<>("anoFabricacao"));
         colPlaca.setCellValueFactory(new PropertyValueFactory<>("placa"));
 
-        // MELHORIA UX 3: Força o campo Ano de Fabricação a aceitar APENAS números
+        // Trava para o campo Ano de Fabricação aceitar apenas números
         txtAnoFabricacao.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.matches("\\d*")) {
                 txtAnoFabricacao.setText(newValue.replaceAll("[^\\d]", ""));
             }
         });
 
-        // MELHORIA UX 2: Habilita/Desabilita botões baseado na seleção da tabela
+        // Habilita/Desabilita botões baseado na seleção da tabela
         tblCarro.getSelectionModel().selectedItemProperty().addListener((obs, selecaoAntiga, novaSelecao) -> {
             if (novaSelecao != null) {
                 btnEditar.setDisable(false);
                 btnExcluir.setDisable(false);
-                btnAdicionar.setDisable(true); // Evita adicionar duplicatas enquanto edita
+                btnAdicionar.setDisable(true);
             } else {
                 btnEditar.setDisable(true);
                 btnExcluir.setDisable(true);
@@ -171,6 +183,43 @@ public class MainController {
             }
         });
 
+        // CONFIGURAÇÃO DO FILTRO INTELIGENTE EM TEMPO REAL:
+        // 1. Envolvemos a lista mestre em uma FilteredList (Começa mostrando tudo: p -> true)
+        FilteredList<CarroDTO> dadosFiltrados = new FilteredList<>(listaCarrosMaster, p -> true);
+
+        // 2. Adicionamos um Listener no campo de texto de pesquisa
+        txtPesquisa.textProperty().addListener((observable, oldValue, newValue) -> {
+            dadosFiltrados.setPredicate(carro -> {
+                // Se o campo estiver vazio, mostra todos os registros
+                if (newValue == null || newValue.isEmpty()) {
+                    return true;
+                }
+
+                String termoBusca = newValue.toLowerCase().trim();
+
+                // Compara as colunas com o termo digitado
+                if (carro.getMarca().toLowerCase().contains(termoBusca)) {
+                    return true;
+                } else if (carro.getModelo().toLowerCase().contains(termoBusca)) {
+                    return true;
+                } else if (carro.getPlaca() != null && carro.getPlaca().toLowerCase().contains(termoBusca)) {
+                    return true;
+                } else if (String.valueOf(carro.getId()).contains(termoBusca)) {
+                    return true;
+                }
+
+                return false; // Não encontrou nenhum match na linha
+            });
+        });
+
+        // 3. Envolvemos a lista filtrada em uma SortedList para que a ordenação das colunas continue funcionando
+        SortedList<CarroDTO> dadosOrdenados = new SortedList<>(dadosFiltrados);
+        dadosOrdenados.comparatorProperty().bind(tblCarro.comparatorProperty());
+
+        // 4. Injeta os dados tratados na tabela
+        tblCarro.setItems(dadosOrdenados);
+
+        // Busca inicial do banco
         carregarCarros();
     }
 }
