@@ -1,10 +1,13 @@
-package com.template;
+package com.template.model;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+
+import static com.template.util.DialogUtil.showError;
+
 
 public class CarroDAO {
 
@@ -21,6 +24,7 @@ public class CarroDAO {
             return true; // Sucesso
 
         } catch (SQLException e) {
+            showError("Erro ao inserir o carro!");
             return false; // Erro (Tratado na tela)
         }
     }

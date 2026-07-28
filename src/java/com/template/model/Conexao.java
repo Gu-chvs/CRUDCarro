@@ -1,4 +1,4 @@
-package com.template; // Alterado para casar com o mesmo pacote do seu CarroDAO
+package com.template.model; // Alterado para casar com o mesmo pacote do seu CarroDAO
 
 import java.sql.Connection;
 import java.sql.DriverManager; // Gerenciador de bancos

@@ -1,4 +1,4 @@
-package com.template;
+package com.template.main;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -9,7 +9,7 @@ public class Main extends Application
     @Override
     public void start(Stage stage) throws Exception
     {
-        FXMLLoader loader = new FXMLLoader(Main.class.getResource("main.fxml"));
+        FXMLLoader loader = new FXMLLoader(Main.class.getResource("../main.fxml"));
         Scene scene = new Scene(loader.load(), 600, 400);
 
         stage.setTitle("Sistema de gestão de veículos");

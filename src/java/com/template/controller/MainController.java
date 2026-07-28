@@ -1,5 +1,7 @@
-package com.template;
+package com.template.controller;
 
+import com.template.model.CarroDAO;
+import com.template.model.CarroDTO;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
