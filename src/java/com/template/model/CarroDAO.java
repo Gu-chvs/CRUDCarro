@@ -47,7 +47,7 @@ public class CarroDAO {
                 listaCarros.add(carro);
             }
         } catch (SQLException e) {
-            // Retorna a lista vazia em caso de erro
+            showError("Erro ao selecionar o carro!");
         }
         return listaCarros;
     }
@@ -65,7 +65,9 @@ public class CarroDAO {
 
             return ps.executeUpdate() > 0;
 
-        } catch (SQLException e) {
+        } catch (SQLException e)
+        {
+            showError("Erro ao atualizar o carro!");
             return false;
         }
     }
@@ -79,6 +81,7 @@ public class CarroDAO {
             return ps.executeUpdate() > 0;
 
         } catch (SQLException e) {
+            showError("Erro ao excluir o carro!");
             return false;
         }
     }
