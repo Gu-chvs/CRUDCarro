@@ -44,6 +44,7 @@ public class MainController {
 
     private final ObservableList<CarroDTO> listaCarrosMaster = FXCollections.observableArrayList();
     private final CarroValidator validator = new CarroValidator();
+    private final CarroDAO carroDAO = new CarroDAO();
 
     // Executa a adição de um novo veículo após validar os campos
     @FXML
@@ -54,14 +55,8 @@ public class MainController {
         }
 
         try {
-            CarroDTO objcarrodto = new CarroDTO();
-            objcarrodto.setMarca(txtMarca.getText().trim());
-            objcarrodto.setModelo(txtModelo.getText().trim());
-            objcarrodto.setAnoFabricacao(Integer.parseInt(txtAnoFabricacao.getText().trim()));
-            objcarrodto.setPlaca(txtPlaca.getText().trim());
-
-            CarroDAO objcarrodao = new CarroDAO();
-            boolean sucesso = objcarrodao.inserirCarro(objcarrodto);
+            CarroDTO carro = CarroDTO.criarComDados(txtMarca.getText(), txtModelo.getText(), txtAnoFabricacao.getText(), txtPlaca.getText());
+            boolean sucesso = carroDAO.inserirCarro(carro);
 
             if (sucesso) {
                 mostrarMensagem("Sucesso: Carro adicionado ao sistema!", "#2ECC71");
@@ -84,15 +79,10 @@ public class MainController {
         }
 
         try {
-            CarroDTO objcarrodto = new CarroDTO();
-            objcarrodto.setId(Integer.parseInt(txtId.getText()));
-            objcarrodto.setMarca(txtMarca.getText().trim());
-            objcarrodto.setModelo(txtModelo.getText().trim());
-            objcarrodto.setAnoFabricacao(Integer.parseInt(txtAnoFabricacao.getText().trim()));
-            objcarrodto.setPlaca(txtPlaca.getText().trim());
+            CarroDTO carro = CarroDTO.criarComDados(txtMarca.getText(), txtModelo.getText(), txtAnoFabricacao.getText(), txtPlaca.getText());
+            carro.setId(Integer.parseInt(txtId.getText()));
 
-            CarroDAO objcarrodao = new CarroDAO();
-            boolean sucesso = objcarrodao.atualizarCarro(objcarrodto);
+            boolean sucesso = carroDAO.atualizarCarro(carro);
 
             if (sucesso) {
                 mostrarMensagem("Sucesso: Carro atualizado corretamente!", "#3498DB");
@@ -111,8 +101,7 @@ public class MainController {
     private void btnExcluirAction(ActionEvent event) {
         try {
             int id = Integer.parseInt(txtId.getText());
-            CarroDAO objcarrodao = new CarroDAO();
-            boolean sucesso = objcarrodao.excluirCarro(id);
+            boolean sucesso = carroDAO.excluirCarro(id);
 
             if (sucesso) {
                 mostrarMensagem("Sucesso: Carro excluído do sistema!", "#E74C3C");
@@ -143,8 +132,7 @@ public class MainController {
     // Consulta os veículos no banco de dados e atualiza a lista principal
     @FXML
     private void carregarCarros() {
-        CarroDAO objCarroDAO = new CarroDAO();
-        ArrayList<CarroDTO> lista = objCarroDAO.selecionarCarros();
+        ArrayList<CarroDTO> lista = carroDAO.selecionarCarros();
         listaCarrosMaster.setAll(lista);
     }
 
@@ -171,59 +159,51 @@ public class MainController {
     // Configura o comportamento inicial dos componentes e da busca da interface
     @FXML
     private void initialize() {
+        configurarColunasTabela();
+        configurarValidacaoDeAno();
+        configurarSelecaoDeLinha();
+        configurarPesquisa();
+        carregarCarros();
+    }
+
+    // Associa cada coluna da tabela ao atributo correspondente do CarroDTO
+    private void configurarColunasTabela() {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colMarca.setCellValueFactory(new PropertyValueFactory<>("marca"));
         colModelo.setCellValueFactory(new PropertyValueFactory<>("modelo"));
         colAnoFabricacao.setCellValueFactory(new PropertyValueFactory<>("anoFabricacao"));
         colPlaca.setCellValueFactory(new PropertyValueFactory<>("placa"));
+    }
 
+    // Restringe o campo de ano para aceitar apenas dígitos
+    private void configurarValidacaoDeAno() {
         txtAnoFabricacao.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.matches("\\d*")) {
                 txtAnoFabricacao.setText(newValue.replaceAll("[^\\d]", ""));
             }
         });
+    }
 
+    // Habilita/desabilita os botões de acordo com a existência de uma linha selecionada
+    private void configurarSelecaoDeLinha() {
         tblCarro.getSelectionModel().selectedItemProperty().addListener((obs, selecaoAntiga, novaSelecao) -> {
-            if (novaSelecao != null) {
-                btnEditar.setDisable(false);
-                btnExcluir.setDisable(false);
-                btnAdicionar.setDisable(true);
-            } else {
-                btnEditar.setDisable(true);
-                btnExcluir.setDisable(true);
-                btnAdicionar.setDisable(false);
-            }
+            boolean temSelecao = novaSelecao != null;
+            btnEditar.setDisable(!temSelecao);
+            btnExcluir.setDisable(!temSelecao);
+            btnAdicionar.setDisable(temSelecao);
         });
+    }
 
+    // Liga a busca digitada pelo usuário à lista filtrada e ordenável exibida na tabela
+    private void configurarPesquisa() {
         FilteredList<CarroDTO> dadosFiltrados = new FilteredList<>(listaCarrosMaster, p -> true);
 
-        txtPesquisa.textProperty().addListener((observable, oldValue, newValue) -> {
-            dadosFiltrados.setPredicate(carro -> {
-                if (newValue == null || newValue.isEmpty()) {
-                    return true;
-                }
-
-                String termoBusca = newValue.toLowerCase().trim();
-
-                if (carro.getMarca().toLowerCase().contains(termoBusca)) {
-                    return true;
-                } else if (carro.getModelo().toLowerCase().contains(termoBusca)) {
-                    return true;
-                } else if (carro.getPlaca() != null && carro.getPlaca().toLowerCase().contains(termoBusca)) {
-                    return true;
-                } else if (String.valueOf(carro.getId()).contains(termoBusca)) {
-                    return true;
-                }
-
-                return false;
-            });
-        });
+        txtPesquisa.textProperty().addListener((observable, oldValue, newValue) ->
+                dadosFiltrados.setPredicate(carro -> carro.correspondeATermo(newValue)));
 
         SortedList<CarroDTO> dadosOrdenados = new SortedList<>(dadosFiltrados);
         dadosOrdenados.comparatorProperty().bind(tblCarro.comparatorProperty());
 
         tblCarro.setItems(dadosOrdenados);
-
-        carregarCarros();
     }
 }
