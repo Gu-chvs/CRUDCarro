@@ -2,6 +2,7 @@ package com.template.controller;
 
 import com.template.model.CarroDAO;
 import com.template.model.CarroDTO;
+import com.template.service.CarroService;
 import com.template.util.DialogUtil;
 import com.template.validator.CarroValidator;
 import javafx.collections.FXCollections;
@@ -17,6 +18,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import java.util.ArrayList;
+
 
 public class MainController {
 
@@ -45,6 +47,7 @@ public class MainController {
     private final ObservableList<CarroDTO> listaCarrosMaster = FXCollections.observableArrayList();
     private final CarroValidator validator = new CarroValidator();
     private final CarroDAO carroDAO = new CarroDAO();
+    private final CarroService carroService = new CarroService();
 
     // Executa a adição de um novo veículo após validar os campos
     @FXML
@@ -55,7 +58,7 @@ public class MainController {
         }
 
         try {
-            CarroDTO carro = CarroDTO.criarComDados(txtMarca.getText(), txtModelo.getText(), txtAnoFabricacao.getText(), txtPlaca.getText());
+            CarroDTO carro = carroService.criarComDados(txtMarca.getText(), txtModelo.getText(), txtAnoFabricacao.getText(), txtPlaca.getText());
             boolean sucesso = carroDAO.inserirCarro(carro);
 
             if (sucesso) {
@@ -79,7 +82,7 @@ public class MainController {
         }
 
         try {
-            CarroDTO carro = CarroDTO.criarComDados(txtMarca.getText(), txtModelo.getText(), txtAnoFabricacao.getText(), txtPlaca.getText());
+            CarroDTO carro = carroService.criarComDados(txtMarca.getText(), txtModelo.getText(), txtAnoFabricacao.getText(), txtPlaca.getText());
             carro.setId(Integer.parseInt(txtId.getText()));
 
             boolean sucesso = carroDAO.atualizarCarro(carro);
@@ -199,7 +202,7 @@ public class MainController {
         FilteredList<CarroDTO> dadosFiltrados = new FilteredList<>(listaCarrosMaster, p -> true);
 
         txtPesquisa.textProperty().addListener((observable, oldValue, newValue) ->
-                dadosFiltrados.setPredicate(carro -> carro.correspondeATermo(newValue)));
+                dadosFiltrados.setPredicate(carro -> carroService.correspondeATermo(carro, newValue)));
 
         SortedList<CarroDTO> dadosOrdenados = new SortedList<>(dadosFiltrados);
         dadosOrdenados.comparatorProperty().bind(tblCarro.comparatorProperty());
