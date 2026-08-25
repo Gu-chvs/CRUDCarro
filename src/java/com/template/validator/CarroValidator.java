@@ -2,17 +2,25 @@ package com.template.validator;
 
 import com.template.util.DialogUtil;
 import java.time.Year;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CarroValidator {
 
     // Valida os campos do veículo e exibe alertas de aviso para cada tipo de falha
     public boolean validarCampos(String marca, String modelo, String ano) {
-        if (marca == null || marca.trim().isEmpty() ||
-                modelo == null || modelo.trim().isEmpty() ||
-                ano == null || ano.trim().isEmpty()) {
+        List<Validador<String>> validadores = new ArrayList<>();
 
-            DialogUtil.showWarning("Os campos Marca, Modelo e Ano são obrigatórios!");
-            return false;
+        validadores.add(new CampoObrigatorioValidador("Marca", marca));
+        validadores.add(new CampoObrigatorioValidador("Modelo", modelo));
+        validadores.add(new CampoObrigatorioValidador("Ano", ano));
+        validadores.add(new ModeloValidador(modelo));
+
+        for (Validador<String> validador : validadores) {
+            if (!validador.validar(validador.getValor())) {
+                DialogUtil.showWarning(validador.getMessagemError());
+                return false;
+            }
         }
 
         if (!ano.trim().matches("\\d+")) {

@@ -11,13 +11,13 @@ public class CampoObrigatorioValidador implements Validador<String>{
 
 
     @Override
-    public boolean validar(String valor) {
+    public boolean validar(String valorAtual) {
         return this.valor != null && !this.valor.trim().isEmpty();
     }
 
     @Override
     public String getMessagemError() {
-        return "O campo " + nomeCampo + "deve ser preenchido.";
+        return "O campo " + nomeCampo + " deve ser preenchido.";
     }
 
     @Override
