@@ -1,10 +1,24 @@
 package com.template.service;
 
-import com.template.model.CarroDTO;
+import com.template.model.dao.CarroDAO;
+import com.template.model.dao.ICarroDAO;
+import com.template.model.dto.CarroDTO;
 
-public class CarroService {
+import java.util.ArrayList;
 
-    // Monta um CarroDTO a partir dos textos do formulário, tratando trim e parse do ano
+public class CarroService implements ICarroService {
+
+    private final ICarroDAO carroDAO;
+
+    public CarroService(ICarroDAO carroDAO) {
+        this.carroDAO = carroDAO;
+    }
+
+    public CarroService() {
+        this(new CarroDAO());
+    }
+
+    @Override
     public CarroDTO criarComDados(String marca, String modelo, String ano, String placa) {
         CarroDTO carro = new CarroDTO();
         carro.setMarca(marca.trim());
@@ -14,7 +28,27 @@ public class CarroService {
         return carro;
     }
 
-    // Verifica se um carro corresponde a um termo de busca (marca, modelo, placa ou id)
+    @Override
+    public boolean cadastrarCarro(CarroDTO carro) {
+        return carroDAO.inserirCarro(carro);
+    }
+
+    @Override
+    public boolean atualizarCarro(CarroDTO carro) {
+        return carroDAO.atualizarCarro(carro);
+    }
+
+    @Override
+    public boolean excluirCarro(int id) {
+        return carroDAO.excluirCarro(id);
+    }
+
+    @Override
+    public ArrayList<CarroDTO> listarCarros() {
+        return carroDAO.selecionarCarros();
+    }
+
+    @Override
     public boolean correspondeATermo(CarroDTO carro, String termo) {
         if (termo == null || termo.trim().isEmpty()) {
             return true;

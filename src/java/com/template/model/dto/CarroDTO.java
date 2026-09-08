@@ -1,4 +1,4 @@
-package com.template.model;
+package com.template.model.dto;
 
 public class CarroDTO {
     private int id;

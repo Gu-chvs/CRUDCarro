@@ -1,7 +1,7 @@
 package com.template.validator;
 
 public class ModeloValidador implements Validador<String> {
-    private final String modelo; // Armazena o modelo a ser validado
+    private final String modelo;
 
     public ModeloValidador(String modelo) {
         this.modelo = modelo;
@@ -13,7 +13,7 @@ public class ModeloValidador implements Validador<String> {
     }
 
     @Override
-    public String getMessagemError() {
+    public String getMensagemErro() {
         return "O campo Modelo não pode conter números.";
     }
 

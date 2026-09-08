@@ -1,16 +1,23 @@
-package com.template.model;
+package com.template.model.dao;
+
+import com.template.model.Conexao;
+import com.template.model.dto.CarroDTO;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.template.util.DialogUtil.showError;
 
+public class CarroDAO implements ICarroDAO {
 
-public class CarroDAO {
+    private static final Logger logger = Logger.getLogger(CarroDAO.class.getName());
 
+    @Override
     public boolean inserirCarro(CarroDTO carro) {
         String sql = "INSERT INTO carros (marca, modelo, ano_fabricacao, placa) VALUES (?, ?, ?, ?)";
         try (Connection conexao = new Conexao().conectaBD();
@@ -21,14 +28,16 @@ public class CarroDAO {
             ps.setInt(3, carro.getAnoFabricacao());
             ps.setString(4, carro.getPlaca());
             ps.execute();
-            return true; // Sucesso
+            return true;
 
         } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Erro ao inserir o carro", e);
             showError("Erro ao inserir o carro!");
-            return false; // Erro (Tratado na tela)
+            return false;
         }
     }
 
+    @Override
     public ArrayList<CarroDTO> selecionarCarros() {
         String sql = "SELECT * FROM carros";
         ArrayList<CarroDTO> listaCarros = new ArrayList<>();
@@ -47,11 +56,13 @@ public class CarroDAO {
                 listaCarros.add(carro);
             }
         } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Erro ao selecionar carros", e);
             showError("Erro ao selecionar o carro!");
         }
         return listaCarros;
     }
 
+    @Override
     public boolean atualizarCarro(CarroDTO carro) {
         String sql = "UPDATE carros SET marca = ?, modelo = ?, ano_fabricacao = ?, placa = ? WHERE id = ?";
         try (Connection conexao = new Conexao().conectaBD();
@@ -65,13 +76,14 @@ public class CarroDAO {
 
             return ps.executeUpdate() > 0;
 
-        } catch (SQLException e)
-        {
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Erro ao atualizar o carro", e);
             showError("Erro ao atualizar o carro!");
             return false;
         }
     }
 
+    @Override
     public boolean excluirCarro(int id) {
         String sql = "DELETE FROM carros WHERE id = ?";
         try (Connection conexao = new Conexao().conectaBD();
@@ -81,6 +93,7 @@ public class CarroDAO {
             return ps.executeUpdate() > 0;
 
         } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Erro ao excluir o carro", e);
             showError("Erro ao excluir o carro!");
             return false;
         }
