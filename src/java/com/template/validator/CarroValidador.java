@@ -1,6 +1,5 @@
 package com.template.validator;
 
-import com.template.util.DialogUtil;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,8 +19,7 @@ public class CarroValidador implements ICarroValidador {
         // Estrutura foreach obrigatória percorrendo os validadores
         for (Validador<String> validador : validadores) {
             if (!validador.validar(validador.getValor())) {
-                DialogUtil.showWarning(validador.getMensagemErro());
-                return false;
+                throw new IllegalArgumentException(validador.getMensagemErro());
             }
         }
 

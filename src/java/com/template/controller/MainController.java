@@ -16,7 +16,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import java.util.ArrayList;
 
 public class MainController {
 
@@ -44,102 +43,93 @@ public class MainController {
 
     private final ObservableList<CarroDTO> listaCarrosMaster = FXCollections.observableArrayList();
 
-    // Injeção de dependência via interfaces (Requisitos 5 e 6: ISeuAssuntoValidador)
+    // Injeção de dependência via interface do Service (backend de regras e dados)
     private final ICarroService carroService;
-    private final ICarroValidador validador;
 
-    // Construtor utilizado pela Fábrica de Controladores no Main (Requisito 6 e 7)
-    public MainController(ICarroService carroService, ICarroValidador validador) {
+    // Construtor principal utilizado pela Fábrica de Controladores
+    public MainController(ICarroService carroService) {
         this.carroService = carroService;
-        this.validador = validador;
     }
 
-    // Executa a adição (cadastro) de um novo veículo após validar os campos (Requisito 5)
+    // Construtor sobrecarregado para retrocompatibilidade
+    public MainController(ICarroService carroService, ICarroValidador validador) {
+        this(carroService);
+    }
+
+    // Ação do FXML para adicionar veículo - delega a criação e validações ao backend (Service)
     @FXML
     private void btnAdicionarAction(ActionEvent event) {
-        // Validação obrigatória no cadastro usando ICarroValidador
-        if (!validador.validarCampos(txtMarca.getText(), txtModelo.getText(), txtAnoFabricacao.getText())) {
-            return;
-        }
-
         try {
-            CarroDTO carro = carroService.criarComDados(txtMarca.getText(), txtModelo.getText(), txtAnoFabricacao.getText(), txtPlaca.getText());
-            boolean sucesso = carroService.cadastrarCarro(carro);
+            carroService.cadastrar(
+                    txtMarca.getText(),
+                    txtModelo.getText(),
+                    txtAnoFabricacao.getText(),
+                    txtPlaca.getText()
+            );
 
-            if (sucesso) {
-                DialogUtil.showInfo("Carro cadastrado com sucesso!");
-                mostrarMensagem("Sucesso: Carro adicionado ao sistema!", "#2ECC71");
-                btnLimparAction(null);
-                carregarCarros();
-            } else {
-                DialogUtil.showError("Não foi possível adicionar o carro no banco.");
-            }
+            DialogUtil.showInfo("Carro cadastrado com sucesso!");
+            mostrarMensagem("Sucesso: Carro adicionado ao sistema!", "#2ECC71");
+            btnLimparAction(null);
+            carregarCarros();
+        } catch (IllegalArgumentException e) {
+            DialogUtil.showWarning(e.getMessage());
+            mostrarMensagem("Aviso: " + e.getMessage(), "#E67E22");
         } catch (Exception e) {
-            DialogUtil.showError("Erro inesperado ao adicionar: Verifique os dados inseridos.");
+            DialogUtil.showError("Erro inesperado ao cadastrar: " + e.getMessage());
         }
     }
 
-    // Executa a atualização do veículo selecionado após validação e confirmação (Requisito 5)
+    // Ação do FXML para editar veículo - confirmação visual e delegação ao backend (Service)
     @FXML
     private void btnEditarAction(ActionEvent event) {
-        // Validação obrigatória na atualização usando ICarroValidador
-        if (!validador.validarCampos(txtMarca.getText(), txtModelo.getText(), txtAnoFabricacao.getText())) {
-            return;
-        }
-
         if (!DialogUtil.showConfirmation("Deseja realmente atualizar as informações deste veículo?")) {
             return;
         }
 
         try {
-            CarroDTO carro = carroService.criarComDados(txtMarca.getText(), txtModelo.getText(), txtAnoFabricacao.getText(), txtPlaca.getText());
-            carro.setId(Integer.parseInt(txtId.getText()));
+            carroService.atualizar(
+                    txtId.getText(),
+                    txtMarca.getText(),
+                    txtModelo.getText(),
+                    txtAnoFabricacao.getText(),
+                    txtPlaca.getText()
+            );
 
-            boolean sucesso = carroService.atualizarCarro(carro);
-
-            if (sucesso) {
-                DialogUtil.showInfo("Carro atualizado com sucesso!");
-                mostrarMensagem("Sucesso: Carro atualizado corretamente!", "#3498DB");
-                btnLimparAction(null);
-                carregarCarros();
-            } else {
-                DialogUtil.showError("Erro ao atualizar o carro no banco de dados.");
-            }
+            DialogUtil.showInfo("Carro atualizado com sucesso!");
+            mostrarMensagem("Sucesso: Carro atualizado corretamente!", "#3498DB");
+            btnLimparAction(null);
+            carregarCarros();
+        } catch (IllegalArgumentException e) {
+            DialogUtil.showWarning(e.getMessage());
+            mostrarMensagem("Aviso: " + e.getMessage(), "#E67E22");
         } catch (Exception e) {
-            DialogUtil.showError("Selecione um carro e verifique os dados.");
+            DialogUtil.showError("Erro inesperado ao atualizar: " + e.getMessage());
         }
     }
 
-    // Executa a exclusão do veículo selecionado após confirmação
+    // Ação do FXML para excluir veículo - confirmação visual e delegação ao backend (Service)
     @FXML
     private void btnExcluirAction(ActionEvent event) {
-        if (txtId.getText() == null || txtId.getText().trim().isEmpty()) {
-            DialogUtil.showWarning("Selecione um carro para excluir.");
-            return;
-        }
-
         if (!DialogUtil.showConfirmation("Tem certeza de que deseja excluir o veículo selecionado?")) {
             return;
         }
 
         try {
-            int id = Integer.parseInt(txtId.getText());
-            boolean sucesso = carroService.excluirCarro(id);
+            carroService.excluir(txtId.getText());
 
-            if (sucesso) {
-                DialogUtil.showInfo("Carro excluído com sucesso!");
-                mostrarMensagem("Sucesso: Carro excluído do sistema!", "#E74C3C");
-                btnLimparAction(null);
-                carregarCarros();
-            } else {
-                DialogUtil.showError("Erro ao excluir o carro.");
-            }
+            DialogUtil.showInfo("Carro excluído com sucesso!");
+            mostrarMensagem("Sucesso: Carro excluído do sistema!", "#E74C3C");
+            btnLimparAction(null);
+            carregarCarros();
+        } catch (IllegalArgumentException e) {
+            DialogUtil.showWarning(e.getMessage());
+            mostrarMensagem("Aviso: " + e.getMessage(), "#E67E22");
         } catch (Exception e) {
-            DialogUtil.showError("Selecione um carro para excluir.");
+            DialogUtil.showError("Erro ao excluir o carro: " + e.getMessage());
         }
     }
 
-    // Reseta todos os campos de texto e a seleção da tabela
+    // Reseta todos os campos visuais e a seleção da tabela
     @FXML
     private void btnLimparAction(ActionEvent event) {
         txtId.clear();
@@ -153,11 +143,10 @@ public class MainController {
         mostrarMensagem("Campos limpos. Pronto para novo cadastro.", "#a1a1a1");
     }
 
-    // Consulta os veículos através da camada de serviço
+    // Consulta os veículos através da camada de serviço e atualiza a lista observável
     @FXML
     private void carregarCarros() {
-        ArrayList<CarroDTO> lista = carroService.listarCarros();
-        listaCarrosMaster.setAll(lista);
+        listaCarrosMaster.setAll(carroService.listarCarros());
     }
 
     // Preenche os campos do formulário com os dados da linha selecionada na tabela
@@ -180,17 +169,16 @@ public class MainController {
         lblStatus.setStyle("-fx-text-fill: " + cor + ";");
     }
 
-    // Configura o comportamento inicial dos componentes e da busca da interface
+    // Configuração inicial dos componentes da interface gráfica
     @FXML
     private void initialize() {
         configurarColunasTabela();
-        configurarValidacaoDeAno();
         configurarSelecaoDeLinha();
         configurarPesquisa();
         carregarCarros();
     }
 
-    // Associa cada coluna da tabela ao atributo correspondente do CarroDTO
+    // Associa cada coluna da tabela à propriedade correspondente do DTO
     private void configurarColunasTabela() {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colMarca.setCellValueFactory(new PropertyValueFactory<>("marca"));
@@ -199,16 +187,7 @@ public class MainController {
         colPlaca.setCellValueFactory(new PropertyValueFactory<>("placa"));
     }
 
-    // Restringe o campo de ano para aceitar apenas dígitos
-    private void configurarValidacaoDeAno() {
-        txtAnoFabricacao.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.matches("\\d*")) {
-                txtAnoFabricacao.setText(newValue.replaceAll("[^\\d]", ""));
-            }
-        });
-    }
-
-    // Habilita/desabilita os botões de acordo com a existência de uma linha selecionada
+    // Controla o estado de ativação dos botões da interface conforme a seleção na tabela
     private void configurarSelecaoDeLinha() {
         tblCarro.getSelectionModel().selectedItemProperty().addListener((obs, selecaoAntiga, novaSelecao) -> {
             boolean temSelecao = novaSelecao != null;
@@ -218,7 +197,7 @@ public class MainController {
         });
     }
 
-    // Liga a busca digitada pelo usuário à lista filtrada e ordenável exibida na tabela
+    // Vincula o campo de pesquisa do FXML ao filtro e ordenação da TableView
     private void configurarPesquisa() {
         FilteredList<CarroDTO> dadosFiltrados = new FilteredList<>(listaCarrosMaster, p -> true);
 

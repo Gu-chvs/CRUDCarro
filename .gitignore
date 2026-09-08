@@ -27,9 +27,4 @@ bin/
 .vscode/
 
 ### Mac OS ###
-.DS_Store
-
-### Documentação Local e Arquivos Gerados ###
-*.pdf
-DOCUMENTACAO_PROJETO.md
-gerar_pdf.py
+.DS_Store

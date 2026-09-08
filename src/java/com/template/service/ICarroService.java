@@ -10,4 +10,8 @@ public interface ICarroService {
     boolean excluirCarro(int id);
     ArrayList<CarroDTO> listarCarros();
     boolean correspondeATermo(CarroDTO carro, String termo);
+
+    void cadastrar(String marca, String modelo, String ano, String placa);
+    void atualizar(String id, String marca, String modelo, String ano, String placa);
+    void excluir(String id);
 }

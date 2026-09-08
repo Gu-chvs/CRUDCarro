@@ -19,10 +19,10 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // 1. Instancia as dependências fora do Controller (Requisito 7)
+        // 1. Instancia as dependências da aplicação (Inversão de Dependência)
         ICarroDAO carroDAO = new CarroDAO();
-        ICarroService carroService = new CarroService(carroDAO);
         ICarroValidador carroValidador = new CarroValidador();
+        ICarroService carroService = new CarroService(carroDAO, carroValidador);
 
         // 2. Configura o FXMLLoader com a Fábrica de Controladores (Requisitos 6 e 7)
         URL fxmlLocation = getClass().getResource("/com/template/main.fxml");
@@ -34,7 +34,7 @@ public class Main extends Application {
         loader.setControllerFactory(controllerClass -> {
             if (controllerClass == MainController.class) {
                 // Injeção de dependência através da fábrica de controladores
-                return new MainController(carroService, carroValidador);
+                return new MainController(carroService);
             }
             try {
                 return controllerClass.getDeclaredConstructor().newInstance();
