@@ -28,7 +28,7 @@ public class CarroService implements ICarroService {
 
     @Override
     public CarroDTO criarComDados(String marca, String modelo, String ano, String placa) {
-        validarCampos(marca, modelo, ano);
+        validarCampos(marca, modelo, ano, placa);
 
         CarroDTO carro = new CarroDTO();
         carro.setMarca(marca != null ? marca.trim() : "");
@@ -116,9 +116,9 @@ public class CarroService implements ICarroService {
                 || String.valueOf(carro.getId()).contains(termoBusca);
     }
 
-    private void validarCampos(String marca, String modelo, String ano) {
+    private void validarCampos(String marca, String modelo, String ano, String placa) {
         if (validador != null) {
-            validador.validarCampos(marca, modelo, ano);
+            validador.validarCampos(marca, modelo, ano, placa);
         }
     }
 

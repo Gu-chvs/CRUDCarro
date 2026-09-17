@@ -3,11 +3,10 @@ package com.template.controller;
 import com.template.model.dto.CarroDTO;
 import com.template.service.ICarroService;
 import com.template.util.DialogUtil;
+import com.template.util.TableHelper;
 import com.template.validator.ICarroValidador;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
-import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -15,7 +14,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
 
 public class MainController {
 
@@ -54,6 +52,15 @@ public class MainController {
     // Construtor sobrecarregado para retrocompatibilidade
     public MainController(ICarroService carroService, ICarroValidador validador) {
         this(carroService);
+    }
+
+    // Configuração inicial dos componentes da interface gráfica
+    @FXML
+    private void initialize() {
+        TableHelper.configurarColunasTabela(colId, colMarca, colModelo, colAnoFabricacao, colPlaca);
+        TableHelper.configurarSelecaoDeLinha(tblCarro, btnAdicionar, btnEditar, btnExcluir);
+        TableHelper.configurarPesquisa(txtPesquisa, tblCarro, listaCarrosMaster, carroService);
+        carregarCarros();
     }
 
     // Ação do FXML para adicionar veículo - delega a criação e validações ao backend (Service)
@@ -143,12 +150,6 @@ public class MainController {
         mostrarMensagem("Campos limpos. Pronto para novo cadastro.", "#a1a1a1");
     }
 
-    // Consulta os veículos através da camada de serviço e atualiza a lista observável
-    @FXML
-    private void carregarCarros() {
-        listaCarrosMaster.setAll(carroService.listarCarros());
-    }
-
     // Preenche os campos do formulário com os dados da linha selecionada na tabela
     @FXML
     private void carregarCampos() {
@@ -163,50 +164,15 @@ public class MainController {
         }
     }
 
+    // Consulta os veículos através da camada de serviço e atualiza a lista observável
+    @FXML
+    private void carregarCarros() {
+        listaCarrosMaster.setAll(carroService.listarCarros());
+    }
+
     // Exibe texto estilizado no rótulo de status da tela
     private void mostrarMensagem(String mensagem, String cor) {
         lblStatus.setText(mensagem);
         lblStatus.setStyle("-fx-text-fill: " + cor + ";");
-    }
-
-    // Configuração inicial dos componentes da interface gráfica
-    @FXML
-    private void initialize() {
-        configurarColunasTabela();
-        configurarSelecaoDeLinha();
-        configurarPesquisa();
-        carregarCarros();
-    }
-
-    // Associa cada coluna da tabela à propriedade correspondente do DTO
-    private void configurarColunasTabela() {
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colMarca.setCellValueFactory(new PropertyValueFactory<>("marca"));
-        colModelo.setCellValueFactory(new PropertyValueFactory<>("modelo"));
-        colAnoFabricacao.setCellValueFactory(new PropertyValueFactory<>("anoFabricacao"));
-        colPlaca.setCellValueFactory(new PropertyValueFactory<>("placa"));
-    }
-
-    // Controla o estado de ativação dos botões da interface conforme a seleção na tabela
-    private void configurarSelecaoDeLinha() {
-        tblCarro.getSelectionModel().selectedItemProperty().addListener((obs, selecaoAntiga, novaSelecao) -> {
-            boolean temSelecao = novaSelecao != null;
-            btnEditar.setDisable(!temSelecao);
-            btnExcluir.setDisable(!temSelecao);
-            btnAdicionar.setDisable(temSelecao);
-        });
-    }
-
-    // Vincula o campo de pesquisa do FXML ao filtro e ordenação da TableView
-    private void configurarPesquisa() {
-        FilteredList<CarroDTO> dadosFiltrados = new FilteredList<>(listaCarrosMaster, p -> true);
-
-        txtPesquisa.textProperty().addListener((observable, oldValue, newValue) ->
-                dadosFiltrados.setPredicate(carro -> carroService.correspondeATermo(carro, newValue)));
-
-        SortedList<CarroDTO> dadosOrdenados = new SortedList<>(dadosFiltrados);
-        dadosOrdenados.comparatorProperty().bind(tblCarro.comparatorProperty());
-
-        tblCarro.setItems(dadosOrdenados);
     }
 }

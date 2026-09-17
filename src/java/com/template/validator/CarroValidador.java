@@ -6,12 +6,13 @@ import java.util.List;
 public class CarroValidador implements ICarroValidador {
 
     @Override
-    public boolean validarCampos(String marca, String modelo, String ano) {
+    public boolean validarCampos(String marca, String modelo, String ano, String placa) {
         List<Validador<String>> validadores = new ArrayList<>();
 
         // Armazena as validações dos diferentes campos
         validadores.add(new CamposObrigatoriosValidador("Marca", marca));
         validadores.add(new CamposObrigatoriosValidador("Modelo", modelo));
+        validadores.add(new CamposObrigatoriosValidador("Placa", placa));
         validadores.add(new CamposObrigatoriosValidador("Ano", ano));
         validadores.add(new ModeloValidador(modelo));
         validadores.add(new AnoValidador(ano));
@@ -24,5 +25,11 @@ public class CarroValidador implements ICarroValidador {
         }
 
         return true;
+    }
+
+    // Sobrecarga para retrocompatibilidade
+    @Override
+    public boolean validarCampos(String marca, String modelo, String ano) {
+        return validarCampos(marca, modelo, ano, null);
     }
 }

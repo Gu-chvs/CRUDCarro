@@ -14,15 +14,15 @@ src/
 │       ├── main/
 │       │   └── Main.java                  -> Ponto de partida, configura dependências e fábrica
 │       ├── controller/
-│       │   └── MainController.java        -> Gerencia eventos visuais da tela (cliques, inputs)
+│       │   └── MainController.java        -> Gerencia apenas anotações e ações @FXML
 │       ├── service/
 │       │   ├── ICarroService.java         -> Interface de regras de negócio
 │       │   └── CarroService.java          -> Lógica de negócio e ponte com o banco
 │       ├── validator/
 │       │   ├── Validador.java             -> Interface genérica de validação (Validador<T>)
-│       │   ├── CamposObrigatoriosValidador.java -> Validação de preenchimento obrigatório
+│       │   ├── CamposObrigatoriosValidador.java -> Validação de preenchimento obrigatório (Marca, Modelo, Ano, Placa)
 │       │   ├── ModeloValidador.java       -> Validação de formato (só letras no modelo)
-│       │   ├── AnoValidador.java          -> Validação de número e ano plausível
+│       │   ├── AnoValidador.java          -> Validação de número e ano plausível (1886 até próximo ano)
 │       │   ├── ICarroValidador.java       -> Interface de orquestração das validações
 │       │   └── CarroValidador.java        -> Reúne a lista de validadores e executa o foreach
 │       ├── model/
@@ -33,7 +33,8 @@ src/
 │       │   └── dto/
 │       │       └── CarroDTO.java          -> Objeto que transporta os dados do carro
 │       └── util/
-│           └── DialogUtil.java            -> Janelas visuais (Alerts de Sucesso, Erro e Confirmação)
+│           ├── DialogUtil.java            -> Janelas visuais (Alerts de Sucesso, Erro e Confirmação)
+│           └── TableHelper.java           -> Configura colunas, seleção de linhas e pesquisa dinâmica da tabela
 └── resources/
     └── com/template/
         ├── main.fxml                      -> Desenho visual da interface (telas, botões, tabela)
@@ -49,9 +50,9 @@ src/
    - **Instancia as peças da aplicação:** Cria o `CarroDAO` e o `CarroValidador`, e injeta ambos no `CarroService` (backend de negócio).
    - **Configura a Fábrica de Controladores (`setControllerFactory`):** Nós ensinamos o `FXMLLoader`: *"Quando você for criar o `MainController`, entregue o `ICarroService` pronto para ele!"*. O Controller agora só precisa se preocupar com os elementos visuais da tela.
 3. O `FXMLLoader.load()` lê o arquivo [`main.fxml`](file:///c:/Users/ra2457065/CRUDCarro/src/resources/com/template/main.fxml), injeta os botões e campos no `MainController` e chama automaticamente o método `initialize()`:
-   - Configura as colunas da tabela (`colMarca`, `colModelo`, etc.);
-   - Configura a ativação dinâmica de botões conforme a seleção na tabela;
-   - Ativa o filtro dinâmico de pesquisa na `TableView`;
+   - Delega a configuração das colunas para `TableHelper.configurarColunasTabela(...)`;
+   - Delega o controle de estado dos botões para `TableHelper.configurarSelecaoDeLinha(...)`;
+   - Delega o filtro dinâmico de busca para `TableHelper.configurarPesquisa(...)`;
    - Chama `carregarCarros()`, buscando os registros no banco para popular a tabela.
 
 ---
@@ -165,8 +166,9 @@ O **SOLID** é um conjunto de 5 princípios de design de software orientado a ob
 
 * **Como estava antes (errado):** O `MainController` fazia tudo: cuidava dos botões, validava texto, conectava no banco e executava comandos SQL. Se a regra de imposto mudasse ou o banco de dados mudasse, mexia-se no Controller.
 * **Como está agora (correto):**
-  - **`MainController`:** Responsável apenas pela interação com o usuário e fluxo de tela.
-  - **`CarroValidador`:** Responsável apenas por coordenar validações.
+  - **`MainController`:** Responsável apenas pelo mapeamento e ações `@FXML` e fluxo visual.
+  - **`TableHelper`:** Responsável exclusivamente pela configuração das colunas, seleção de linhas e filtro dinâmico de pesquisa da tabela.
+  - **`CarroValidador`:** Responsável apenas por coordenar a lista de validações.
   - **`CarroService`:** Responsável pelas regras de negócio e orquestração.
   - **`CarroDAO`:** Responsável apenas por falar com o banco de dados (SQL).
   - **`DialogUtil`:** Responsável apenas por desenhar alertas na tela.
